@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikDown - TikTok Downloader No Watermark Premium</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📥</text></svg>">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cyan: '#00f2fe',
+                            pink: '#fe0979',
+                            dark: '#0a0f1d',
+                            darker: '#05070f',
+                            card: '#13192b'
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2s infinite alternate',
+                        'float': 'floatEffect 3s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- JSZip for Downloading Photo Carousel as ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #05070f;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 242, 254, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(254, 9, 121, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 5px rgba(0, 242, 254, 0.4), 0 0 10px rgba(0, 242, 254, 0.2); }
+            100% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.8), 0 0 25px rgba(0, 242, 254, 0.4); }
+        }
+
+        @keyframes floatEffect {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05070f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fe0979;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between selection:bg-brand-pink selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800/80 bg-brand-darker/60 backdrop-blur-xl sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-pink to-brand-cyan p-[2px] animate-float">
+                    <div class="w-full h-full bg-brand-dark rounded-[10px] flex items-center justify-center">
+                        <i class="fa-brands fa-tiktok text-white text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-brand-cyan via-white to-brand-pink bg-clip-text text-transparent">
+                            TIK<span class="text-white">DOWN</span>
+                        </h1>
+                        <span class="text-[9px] bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 px-1.5 py-0.5 rounded-md font-bold tracking-wider animate-pulse uppercase">by Dilzz</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-medium">No Watermark Downloader</p>
+                </div>
+            </div>
+            
+            <nav class="hidden sm:flex items-center gap-1">
+                <button onclick="switchTab('downloader')" id="btn-tab-downloader" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-brand-cyan/20 to-brand-pink/20 text-white border border-brand-cyan/30">
+                    <i class="fa-solid fa-download mr-1.5"></i> Downloader
+                </button>
+                <button onclick="switchTab('history')" id="btn-tab-history" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-white hover:bg-slate-800/40">
+                    <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> Riwayat <span id="history-badge" class="hidden bg-brand-pink text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">0</span>
+                </button>
+                <button onclick="switchTab('guide')" id="btn-tab-guide" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 text-slate-400 hover:text-white hover:bg-slate-800/40">
+                    <i class="fa-solid fa-book mr-1.5"></i> Panduan
+                </button>
+            </nav>
+
+            <div class="flex items-center gap-2">
+                <div class="hidden md:flex flex-col items-end text-right">
+                    <span class="text-[10px] text-slate-400 uppercase font-semibold">Dibuat oleh</span>
+                    <span class="text-xs font-bold text-brand-cyan flex items-center gap-1">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Dilzz
+                    </span>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700">
+                    <i id="mobile-menu-icon" class="fa-solid fa-bars text-slate-300"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Dropdown -->
+        <div id="mobile-menu" class="hidden sm:hidden border-b border-slate-800 bg-brand-dark/95 backdrop-blur-2xl transition-all duration-300">
+            <div class="px-4 py-3 flex flex-col gap-2">
+                <button onclick="switchTab('downloader'); toggleMobileMenu()" class="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-brand-cyan/20 to-brand-pink/20 border border-brand-cyan/20 text-white">
+                    <i class="fa-solid fa-download text-brand-cyan"></i> Pengunduh Video
+                </button>
+                <button onclick="switchTab('history'); toggleMobileMenu()" class="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-900">
+                    <i class="fa-solid fa-clock-rotate-left text-brand-pink"></i> Riwayat Unduhan
+                </button>
+                <button onclick="switchTab('guide'); toggleMobileMenu()" class="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-900">
+                    <i class="fa-solid fa-book text-emerald-400"></i> Panduan & Cara Pakai
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8 md:py-12">
+        <!-- TAB 1: DOWNLOADER -->
+        <div id="tab-downloader" class="tab-content block space-y-8">
+            <!-- Hero Header -->
+            <div class="text-center space-y-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse"></span> Gratis & Tanpa Batas
+                </span>
+                <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight">
+                    Download Video TikTok <br>
+                    <span class="bg-gradient-to-r from-brand-cyan via-purple-400 to-brand-pink bg-clip-text text-transparent">Tanpa Watermark</span>
+                </h2>
+                <p class="text-sm md:text-base text-slate-400 max-w-lg mx-auto">
+                    Simpan video, foto, dan lagu MP3 dari TikTok dengan kualitas HD terbaik secara instan dan tanpa ribet.
+                </p>
+            </div>
+
+            <!-- Input Form Box -->
+            <div class="bg-brand-card/60 backdrop-blur-md border border-slate-800/80 p-5 md:p-8 rounded-3xl shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]">
+                <form id="download-form" onsubmit="handleProcess(event)" class="space-y-4">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-link text-slate-500 text-lg"></i>
+                        </div>
+                        <input type="text" id="tiktok-url" name="url" placeholder="Tempel link video TikTok di sini..." required
+                            class="block w-full pl-12 pr-28 py-4 bg-brand-dark border border-slate-700/80 focus:border-brand-cyan rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all duration-300 text-sm md:text-base"
+                        />
+                        <div class="absolute inset-y-0 right-1.5 flex items-center gap-1">
+                            <button type="button" onclick="pasteClipboard()" class="hidden md:flex items-center justify-center px-3 py-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all duration-200">
+                                <i class="fa-regular fa-clipboard mr-1"></i> Paste
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="button" onclick="clearInput()" class="px-4 py-4 bg-slate-900 border border-slate-800 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-all duration-200" title="Bersihkan input">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <button type="submit" id="btn-submit" class="flex-grow flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-cyan to-blue-600 hover:opacity-95 shadow-lg shadow-brand-cyan/20 active:scale-[0.98] transition-all duration-200 cursor-pointer">
+                            <span>Mulai Download</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Status Feedback & Loading -->
+                <div id="loader-container" class="hidden mt-8 text-center space-y-4">
+                    <div class="inline-block relative w-12 h-12">
+                        <div class="absolute inset-0 rounded-full border-4 border-slate-800 border-t-brand-cyan animate-spin"></div>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-white">Menghubungi Server...</p>
+                        <p class="text-xs text-slate-400 mt-1">Mengekstrak file media dan menghapus watermark secara otomatis</p>
+                    </div>
+                </div>
+
+                <!-- Error Container -->
+                <div id="error-container" class="hidden mt-6 p-4 rounded-2xl bg-rose-950/40 border border-rose-800/50 text-rose-200 flex items-start gap-3">
+                    <i class="fa-solid fa-circle-exclamation text-xl text-rose-500 mt-0.5"></i>
+                    <div>
+                        <h4 class="font-bold text-white">Gagal Mengunduh</h4>
+                        <p id="error-message" class="text-sm text-slate-300 mt-1">Pastikan tautan TikTok yang Anda masukkan valid dan bukan akun privat.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Container -->
+            <div id="result-container" class="hidden space-y-6 animate-fadeIn">
+                <div class="p-6 md:p-8 bg-brand-card/90 border border-slate-800 rounded-3xl space-y-6">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Left: Thumbnail/Player -->
+                        <div class="w-full md:w-5/12 space-y-3">
+                            <div class="relative rounded-2xl overflow-hidden aspect-[9/16] max-h-[400px] bg-slate-900 border border-slate-800 flex items-center justify-center">
+                                <video id="result-video-preview" controls class="w-full h-full object-cover hidden"></video>
+                                <img id="result-cover-preview" src="" alt="Video Cover" class="w-full h-full object-cover">
+                                <span id="media-type-badge" class="absolute top-3 left-3 bg-brand-pink px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider">Video</span>
+                            </div>
+                            
+                            <!-- Statistics Info Grid -->
+                            <div class="grid grid-cols-4 gap-2 text-center">
+                                <div class="p-2 bg-slate-950/60 border border-slate-800/60 rounded-xl">
+                                    <i class="fa-solid fa-heart text-brand-pink text-xs"></i>
+                                    <div id="stat-likes" class="text-xs font-bold mt-0.5">0</div>
+                                </div>
+                                <div class="p-2 bg-slate-950/60 border border-slate-800/60 rounded-xl">
+                                    <i class="fa-solid fa-comment text-brand-cyan text-xs"></i>
+                                    <div id="stat-comments" class="text-xs font-bold mt-0.5">0</div>
+                                </div>
+                                <div class="p-2 bg-slate-950/60 border border-slate-800/60 rounded-xl">
+                                    <i class="fa-solid fa-share text-purple-400 text-xs"></i>
+                                    <div id="stat-shares" class="text-xs font-bold mt-0.5">0</div>
+                                </div>
+                                <div class="p-2 bg-slate-950/60 border border-slate-800/60 rounded-xl">
+                                    <i class="fa-solid fa-play text-slate-400 text-xs"></i>
+                                    <div id="stat-views" class="text-xs font-bold mt-0.5">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Details & Download Options -->
+                        <div class="flex-grow flex flex-col justify-between space-y-6">
+                            <!-- Author Profile info -->
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <img id="author-avatar" src="https://placehold.co/100x100" alt="Avatar" class="w-12 h-12 rounded-full border border-slate-700 object-cover">
+                                    <div>
+                                        <h3 id="author-name" class="font-bold text-white text-base">Nama Kreator</h3>
+                                        <p id="author-username" class="text-xs text-brand-cyan">@username</p>
+                                    </div>
+                                </div>
+                                <p id="video-desc" class="text-sm text-slate-300 leading-relaxed italic line-clamp-3">
+                                    Deskripsi caption video TikTok...
+                                </p>
+                            </div>
+
+                            <!-- Download Action List -->
+                            <div class="space-y-3">
+                                <h4 class="text-xs uppercase font-extrabold text-slate-400 tracking-wider">Unduh Media:</h4>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <!-- Video No Watermark (SD) -->
+                                    <button onclick="downloadMedia('video_nowm')" class="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white font-bold transition-all shadow-md active:scale-95 cursor-pointer">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-solid fa-video text-lg"></i>
+                                            <span class="text-left text-sm block">
+                                                No Watermark
+                                                <span class="block text-[10px] font-normal text-teal-100">Format MP4 (Cepat)</span>
+                                            </span>
+                                        </div>
+                                        <i class="fa-solid fa-circle-down"></i>
+                                    </button>
+
+                                    <!-- Video No Watermark (HD) -->
+                                    <button onclick="downloadMedia('video_hd')" id="btn-download-hd" class="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-brand-cyan to-blue-600 hover:opacity-90 text-white font-bold transition-all shadow-md active:scale-95 cursor-pointer">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-solid fa-circle-play text-lg"></i>
+                                            <span class="text-left text-sm block">
+                                                No Watermark HD
+                                                <span class="block text-[10px] font-normal text-cyan-100">Kualitas Lebih Tajam</span>
+                                            </span>
+                                        </div>
+                                        <i class="fa-solid fa-circle-down"></i>
+                                    </button>
+
+                                    <!-- Video With Watermark -->
+                                    <button onclick="downloadMedia('video_wm')" class="flex items-center justify-between p-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition-all active:scale-95 cursor-pointer">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fa-solid fa-video-slash text-slate-400"></i>
+                                            <span class="text-left text-sm block">
+                                                With Watermark
+                                                <span class="block text-[10px] font-normal text-slate-400">Ada label TikTok</span>
+                                            </span>
+                                        </div>
+                                        <i class="fa-solid fa-arrow-down-long"></i>
+                                    </button>
+
+                                    <!-- Audio Only -->
+                                    <button onclick="downloadMedia('music')" class="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-brand-pink to-purple-600 hover:opacity-95 text-white font-bold transition-all shadow-md active:scale-95 curs
